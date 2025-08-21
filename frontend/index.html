@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تامر جابر للأقمشة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .gallery-item { transition: transform 0.5s ease, box-shadow 0.5s ease; }
+        .gallery-item:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); }
+        .section { display: none; }
+        .section.active { display: block; }
+        .image-frame { border: 3px solid #d4af37; }
+        nav { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
+    </style>
+    <script>
+        // === اضبط رابط الباك إند هنا عند الحاجة ===
+        const API_BASE = "http://127.0.0.1:5000";
+    </script>
+</head>
+<body class="bg-white font-sans min-h-screen flex flex-col">
+    <header class="bg-gradient-to-r from-black to-red-900 text-white py-12 text-center">
+        <h1 class="text-5xl font-bold text-yellow-400">تامر جابر للأقمشة</h1>
+        <p class="mt-4 text-xl text-gray-200">فخامة وجودة لا تُضاهى</p>
+    </header>
+
+    <nav class="bg-black text-white py-4 sticky top-0 z-10">
+        <div class="container mx-auto px-4 flex justify-center space-x-8">
+            <a href="#home" onclick="showSection('home')" class="hover:text-yellow-400 font-semibold">الرئيسية</a>
+            <a href="#trader" onclick="selectRole('trader')" class="hover:text-yellow-400 font-semibold">قسم التجار</a>
+            <a href="#customer" onclick="selectRole('customer')" class="hover:text-yellow-400 font-semibold">قسم الزبائن</a>
+            <a href="#contact" onclick="showSection('contact')" class="hover:text-yellow-400 font-semibold">تواصل معنا</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto py-12 px-4 flex-grow">
+        <!-- الصفحة الرئيسية -->
+        <section id="home" class="section active text-center bg-gradient-to-b from-gray-100 to-white rounded-3xl p-8">
+            <h2 class="text-3xl font-bold text-red-900 mb-8">مرحبًا بكم في تامر جابر للأقمشة</h2>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto">اختر دورك من الأعلى لتبدأ تجربتك، سواء كنت تاجرًا تدير مخزونك أو زبونًا تبحث عن الأناقة والجودة.</p>
+        </section>
+
+        <!-- قسم التجار -->
+        <section id="trader" class="section bg-gradient-to-b from-gray-100 to-white rounded-3xl p-8">
+            <h2 class="text-3xl font-bold text-center text-red-900 mb-6">قسم التجار</h2>
+            <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl mx-auto">
+                <h3 class="text-2xl font-semibold text-yellow-400 mb-4">إضافة قماش جديد</h3>
+                <div class="space-y-4">
+                    <input id="fabricName" type="text" placeholder="اسم القماش" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900">
+                    <input id="fabricColor" type="text" placeholder="لون القماش" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900">
+                    <input id="fabricQuantity" type="number" placeholder="عدد القماش" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900">
+                    <input id="fabricImage" type="file" accept="image/*" class="w-full p-3 border rounded-lg">
+                    <button onclick="addFabric()" class="w-full bg-red-900 text-white py-3 rounded-lg hover:bg-yellow-600 transition">إضافة القماش</button>
+                </div>
+            </div>
+            <div id="fabricTable" class="mt-8 max-w-4xl mx-auto">
+                <h3 class="text-2xl font-semibold text-center text-yellow-400 mb-4">الأقمشة المضافة</h3>
+                <table class="w-full bg-white rounded-lg shadow-2xl">
+                    <thead>
+                        <tr class="bg-red-900 text-white">
+                            <th class="p-3">اسم القماش</th>
+                            <th class="p-3">اللون</th>
+                            <th class="p-3">العدد</th>
+                            <th class="p-3">الصورة</th>
+                            <th class="p-3">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fabricTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- قسم الزبائن -->
+        <section id="customer" class="section bg-gradient-to-b from-gray-100 to-white rounded-3xl p-8">
+            <h2 class="text-3xl font-bold text-center text-red-900 mb-6">تشكيلة الأقمشة</h2>
+            <div id="fabricGallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"></div>
+        </section>
+
+        <!-- قسم تواصل معنا -->
+        <section id="contact" class="section bg-gradient-to-b from-gray-100 to-white rounded-3xl p-8 text-center">
+            <h2 class="text-3xl font-bold text-red-900 mb-6">تواصل معنا</h2>
+            <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl mx-auto">
+                <p class="text-lg text-gray-900 mb-4">للتواصل المباشر، اتصل بنا على:</p>
+                <p class="text-2xl font-semibold text-yellow-400 mb-4">01016977491</p>
+                <a href="https://wa.me/201016977491" target="_blank" class="inline-block bg-green-600 text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-green-700 transition mb-6">تواصل عبر WhatsApp</a>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">أو أرسل رسالة</h3>
+                <div class="space-y-4">
+                    <input type="text" placeholder="الاسم" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900">
+                    <input type="email" placeholder="البريد الإلكتروني" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900">
+                    <textarea placeholder="رسالتك" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 h-32"></textarea>
+                    <button onclick="alert('تم إرسال الرسالة!')" class="w-full bg-red-900 text-white py-3 rounded-lg hover:bg-yellow-600 transition">إرسال</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black text-white py-6 text-center">
+        <p>&copy; 2025 تامر جابر للأقمشة. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        let fabricsCache = [];
+        const selectedRole = localStorage.getItem('userRole');
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function selectRole(role) {
+            localStorage.setItem('userRole', role);
+            showSection(role);
+        }
+
+        // === إضافة قماش (رفع الصورة وتحويلها Base64 ثم إرسال للباك إند) ===
+        function addFabric() {
+            const name = document.getElementById('fabricName').value.trim();
+            const color = document.getElementById('fabricColor').value.trim();
+            const quantity = document.getElementById('fabricQuantity').value.trim();
+            const imageInput = document.getElementById('fabricImage');
+            const imageFile = imageInput.files[0];
+
+            if (name && color && quantity && imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fabric = {
+                        name,
+                        color,
+                        quantity: Number(quantity),
+                        image: e.target.result
+                    };
+                    fetch(`${API_BASE}/fabrics`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(fabric)
+                    })
+                    .then(r => r.json())
+                    .then(() => {
+                        displayFabrics();
+                        clearForm();
+                    })
+                    .catch(() => alert('حصل خطأ أثناء الإضافة'));
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                alert('يرجى ملء جميع الحقول واختيار صورة');
+            }
+        }
+
+        function displayFabrics() {
+            fetch(`${API_BASE}/fabrics`)
+            .then(r => r.json())
+            .then(data => {
+                fabricsCache = data;
+                const tableBody = document.getElementById('fabricTableBody');
+                const gallery = document.getElementById('fabricGallery');
+                tableBody.innerHTML = '';
+                gallery.innerHTML = '';
+
+                data.forEach(fabric => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-3">${fabric.name}</td>
+                        <td class="p-3">${fabric.color}</td>
+                        <td class="p-3">${fabric.quantity}</td>
+                        <td class="p-3"><img src="${fabric.image}" alt="${fabric.name}" class="w-16 h-16 object-cover rounded image-frame"></td>
+                        <td class="p-3">
+                            <button onclick="deleteFabric(${fabric.id})" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">حذف</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item bg-white p-6 rounded-3xl shadow-2xl';
+                    galleryItem.innerHTML = `
+                        <img src="${fabric.image}" alt="${fabric.name}" class="w-full h-96 object-cover rounded-lg mb-4 image-frame">
+                        <h3 class="text-xl font-semibold text-yellow-400">${fabric.name}</h3>
+                        <p class="text-gray-700">اللون: ${fabric.color}</p>
+                        <p class="text-gray-700">العدد المتوفر: ${fabric.quantity}</p>
+                    `;
+                    gallery.appendChild(galleryItem);
+                });
+            })
+            .catch(() => {
+                console.error('خطأ أثناء جلب الأقمشة');
+            });
+        }
+
+        function deleteFabric(id) {
+            fetch(`${API_BASE}/fabrics/${id}`, { method: "DELETE" })
+                .then(() => displayFabrics())
+                .catch(() => alert('حصل خطأ أثناء الحذف'));
+        }
+
+        function clearForm() {
+            document.getElementById('fabricName').value = '';
+            document.getElementById('fabricColor').value = '';
+            document.getElementById('fabricQuantity').value = '';
+            document.getElementById('fabricImage').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (selectedRole) {
+                showSection(selectedRole);
+            } else {
+                showSection('home');
+            }
+            displayFabrics();
+        });
+    </script>
+</body>
+</html>
